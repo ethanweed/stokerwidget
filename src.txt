@@ -1,0 +1,48 @@
+const url = "https://stokercloud.dk/v2/dataout2/controllerdata2.php?screen=XXX&token=XXX;
+
+
+
+let res;
+try {
+    const req = new Request(url);
+    req.timeoutInterval = 10;
+    res = await req.loadJSON();
+} catch (e) {
+    let w = new ListWidget();
+    w.backgroundColor = Color.black();
+    let t = w.addText("⚠️ Load failed");
+    t.textColor = Color.white();
+    Script.setWidget(w);
+    Script.complete();
+    return;
+}
+
+const pellets   = res.frontdata?.[0]?.value ?? "N/A";
+const boilertemp = res.frontdata?.[1]?.value ?? "N/A";
+const state     = res.miscdata?.state?.value ?? "";
+const status    = state === "state_5" ? "🔥" : "💤";
+
+if (config.runsInWidget) {
+    Script.setWidget(createWidget());
+    Script.complete();
+}
+
+function createWidget() {
+    let w = new ListWidget();
+    w.spacing = 12;
+    w.backgroundColor = Color.black();
+
+    let titleText = w.addText(status);
+    titleText.textSize = 20;
+    titleText.textColor = Color.white();
+
+    let tempText = w.addText("🌡️ " + boilertemp + "°C");
+    tempText.textSize = 15;
+    tempText.textColor = Color.white();
+
+    let pelletText = w.addText("🪵 " + pellets + " kg");
+    pelletText.textSize = 15;
+    pelletText.textColor = Color.white();
+
+    return w;
+}
